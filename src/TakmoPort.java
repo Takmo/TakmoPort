@@ -16,14 +16,25 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener {
 
-    // Waiting for players to right click.
     public enum TakmoClickType {
         TELEPORTER,
         WAYPOINT,
         FOCUS,
         INFO
     }
-    private HashMap<Player, TakmoClickType> clickingPlayers;
+
+    private class TakmoCommand {
+        private String[] args;
+        private TakmoClickType type;
+        public String[] getArguments() { return args; }
+        public TakmoClickType getType() { return type; }
+        public TakmoCommand(TakmoClickType t, String[] a) {
+            type = t;
+            args = a;
+        }
+    }
+
+    private HashMap<Player, TakmoCommand> clickingPlayers;
 
     private int baseBlockTypeId; // The typeId for the base block from config.
 
@@ -34,7 +45,7 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener {
         getCommand("teleporter").setExecutor(this);
         getCommand("focus").setExecutor(this);
         getCommand("info").setExecutor(this);
-        clickingPlayers = new HashMap<Player, TakmoClickType>();
+        clickingPlayers = new HashMap<Player, TakmoCommand>();
         getServer().getPluginManager().registerEvents(this, this);
     }
 
@@ -42,11 +53,7 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener {
         
     }
 
-    /*
-     *  Commands and clicking
-     */
-
-    public boolean onCommand(CommandSender s, Command c, String l, String[] args) {
+    public boolean onCommand(CommandSender s, Command c, String l, String[] a) {
         
         // Must be a player.
         if(s instanceof ConsoleCommandSender)
@@ -56,16 +63,16 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener {
 
         // Commands
         if(l.equals("teleporter")) {
-            clickingPlayers.put((Player) s, TakmoClickType.TELEPORTER);
+            clickingPlayers.put((Player) s, new TakmoCommand(TakmoClickType.TELEPORTER, a));
         }
         if(l.equals("waypoint")) {
-            clickingPlayers.put((Player) s, TakmoClickType.WAYPOINT);
+            clickingPlayers.put((Player) s, new TakmoCommand(TakmoClickType.WAYPOINT, a));
         }
         if(l.equals("focus")) {
-            clickingPlayers.put((Player) s, TakmoClickType.FOCUS);
+            clickingPlayers.put((Player) s, new TakmoCommand(TakmoClickType.FOCUS, a));
         }
         if(l.equals("info")) {
-            clickingPlayers.put((Player) s, TakmoClickType.INFO);
+            clickingPlayers.put((Player) s, new TakmoCommand(TakmoClickType.INFO, a));
         }
 
         return true;
