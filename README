@@ -1,0 +1,89 @@
+TakmoPort - A Teleporting Plugin
+
+- Introduction -
+
+Quite a long time ago, I sat down one weekend and hacked together a teleportation
+plugin named ModePoints. I started off wanting to simplify teleportation, and,
+in retrospect, I actually made it MORE difficult. Not entirely happy with that
+attempt and still a bit unhappy about current teleportation methods, I'm starting
+on a new project, named TakmoPort, which will hopefully be an improvement from
+the original plugin.
+
+This project is currently in development, so do not expect it to be ready soon.
+It will be ready when it's ready. That's about all I can say.
+
+I will be uploading my progress here as I work on the project. Unless otherwise
+stated, all code here is released subject to the zlib/libpng license.
+
+The rest of this text consists of my attempt to explain what the plugin should
+do and how it will work.
+
+- Ideas -
+
+TakmoPort would consist of two types of entities: Waypoints and Teleporters.
+A teleporter serves as the sending location of a teleport.
+A waypoint serves as the receiving location of a teleport.
+Teleporters are linked to specific waypoints.
+Standing in a teleporter for 3 seconds will teleport you to the asigned waypoint.
+If a teleporter needs a key, you must be HOLDING the correct key in your hand.
+
+Each teleporter and waypoint is marked by a single block (type specified in config)
+that serves as the base. A player using a teleport must be standing on/above the
+teleporter base within 3 blocks on the Y-axis. When a player is teleported to a
+waypoint, they will automatically be elevated to the next free space above the base.
+
+To create a waypoint, use the /waypoint command and click the desired base block.
+The syntax is as follows:
+
+/waypoint [name - required] [key - default false] [permission.node]
+
+The name is required to create a waypoint, and must be unique from existing waypoints.
+The key option defaults to false, but if passed true, the key required is the item
+you are currently holding (nothing is a valid key.) The final option, the permission
+node, allows you to specify the required permission a player must possess to be
+teleported to this waypoint. Not required by default, but may be useful for admins.
+
+To create a teleporter, use the /teleporter command and click the desired base block.
+The syntax is as follows:
+
+/teleporter [waypoint - optional]
+
+When creating a teleporter with a destination waypoint, the teleporter will automatically
+be set to teleport to a specific waypoint. By omitting the waypoint option, you create
+a temporary teleporter.
+
+Temporary teleporters have no waypoint by default and will not teleport unless focused.
+These teleporters can be useful as a public teleporter allowing you to teleport to any
+number of waypoints rather than being limited to a single one. In order to teleport
+using a temporary teleporter, you must focus the teleporter on the desired waypoint
+before stepping into it. After focusing, the teleporter acts as any normal teleporter.
+When a player has been teleported, the teleporter reverts back to its original unfocused
+state.
+To focus, use the following command and click the base block.
+
+/focus [waypoint - required]
+
+To delete a waypoint or teleporter, simply destroy the base block and the entity will be
+unregistered. By default, anyone is able to use and destroy teleporters, so it may be
+useful to use an ownership plugin such as LWC alongside TakmoPort.
+
+To determine the destination or name of a teleporter/waypoint, use the /info command
+and click the base block. This will list the current desination waypoint for teleporters
+and the name and required key for waypoints.
+
+- Configuration Options / config.yml -
+
+baseBlockId: 22 # Lapiz block
+showKeyInfo: true # Show the required key using /info. False to hide key.
+
+- Permission Nodes -
+
+takmoport.teleport - Able to make use of a teleporter.
+takmoport.admin - Able to TP to all waypoints, even those requiring permissions.
+takmoport.create.teleport - Able to create teleporters.
+takmoport.create.waypoint - Able to create waypoints.
+takmoport.focus - Able to focus temporary teleporters.
+takmoport.info - Examine info on teleporters and waypoints.
+takmoport.default - All of the above permissions excluding admin
+takmoport.* - All of the above including admin.
+

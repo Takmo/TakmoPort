@@ -1,0 +1,55 @@
+name: TakmoPort
+version: 0.1
+description: Practical waypoint teleportation.
+author: TechnoBulldog
+website: https://github.com/technobulldog/takmoport
+main: com.bitwisehero.takmoport.TakmoPort
+commands:
+    waypoint:
+        description: Creates a waypoint with the given name, key, and possibly permission.
+        usage: /waypoint [name REQUIRED] [key true/FALSE] [perm any.perm.node]
+        permission: takmoport.create.waypoint
+    teleporter:
+        description: Create a teleporter with or without a focus.
+        usage: /waypoint [name OPTIONAL]
+        permission: takmoport.create.teleporter
+    focus:
+        description: Focus a temporary teleporter.
+        usage: /focus [name REQUIRED]
+        permission: takmoport.focus
+    info:
+        description: Check information on teleporter or waypoint.
+        usage: /info
+        permission: takmoport.info
+permissions:
+    takmoport.teleport:
+        description: Allows players to make use of most teleporters.
+        default: true
+    takmoport.create.teleport:
+        description: Allows players to create teleporters.
+        default: true
+    takmoport.create.waypoint:
+        description: Allows players to create waypoints.
+        default: true
+    takmoport.focus:
+        description: Allows players to focus temporary teleporters.
+        default: true
+    takmoport.info:
+        description: Allows players to check teleporter/waypoint info.
+        default: true
+    takmoport.admin:
+        description: Allows admins to use any waypoint, even those with permission node requirements.
+        default: op
+    takmoport.default:
+        description: All permissions except for admin permissions.
+        children:
+            takmoport.teleport: true
+            takmoport.create.teleport: true
+            takmoport.create.waypoint: true
+            takmoport.focus: true
+            takmoport.info: true
+    takmoport.*:
+        description: All permissions including admin permissions.
+        children:
+            takmoport.default: true
+            takmoport.admin: true
