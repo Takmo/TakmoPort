@@ -25,7 +25,7 @@ permissions:
     takmoport.teleport:
         description: Allows players to make use of most teleporters.
         default: true
-    takmoport.create.teleport:
+    takmoport.create.teleporter:
         description: Allows players to create teleporters.
         default: true
     takmoport.create.waypoint:

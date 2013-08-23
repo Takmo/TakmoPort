@@ -13,6 +13,7 @@
         <mkdir dir="build/jar" />
         <jar destfile="build/jar/TakmoPort.jar" basedir="build/classes">
             <zipfileset dir="./src" includes="plugin.yml" fullpath="plugin.yml" />
+            <zipfileset dir="./src" includes="config.yml" fullpath="config.yml" />
         </jar>
         <copy file="build/jar/TakmoPort.jar" tofile="./plugins/TakmoPort.jar" />
     </target>
