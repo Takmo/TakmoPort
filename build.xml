@@ -9,7 +9,7 @@
         <mkdir dir="build/classes" />
         <javac srcdir="src" destdir="build/classes" classpathref="classpath" />
     </target>
-    <target name="jar">
+    <target name="jar" depends="compile">
         <mkdir dir="build/jar" />
         <jar destfile="build/jar/TakmoPort.jar" basedir="build/classes">
             <zipfileset dir="./src" includes="plugin.yml" fullpath="plugin.yml" />
