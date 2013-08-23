@@ -16,14 +16,12 @@ public class TakmoWaypoint {
 
 
     public TakmoWaypoint(Location l, String n, Material m, String p) {
-
         if(p == null) // Default value.
             p = "takmoport.teleport";
         location = l;
         name = n;
         key = m;
         permission = p;
-
     }
 
 
@@ -39,41 +37,38 @@ public class TakmoWaypoint {
 
     public void sendInfo(Player p, boolean showKeyInfo) {
         if(key != null && (showKeyInfo || p.hasPermission("takmoport.admin")))
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Waypoint " +  name + " has permission " + permission +
-                    " and requires key " + key);
+            p.sendMessage(ChatColor.LIGHT_PURPLE +
+                    "Waypoint: " +  name +
+                    " / Permission: " + permission +
+                    " / Key: " + key);
         else
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Waypoint " + name + " has permission " + permission);
+            p.sendMessage(ChatColor.LIGHT_PURPLE +
+                    "Waypoint: " +name +" / Permission: " + permission);
     }
 
 
-    public void teleport(Player p) {
-
+    public boolean teleport(Player p) {
         // Check permissions.
-        if(!p.hasPermission(permission)) {
+        if(!p.hasPermission(permission) || !p.hasPermission("takmoport.teleport")) {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "You don't have permission to teleport!");
-            return;
+            return false; // Did not teleport.
         }
 
         // Check key.
-        if(key != null) {
-            if(key != p.getItemInHand().getType()) {
-                p.sendMessage(ChatColor.LIGHT_PURPLE + "You are holding the incorrect key!");
-                return;
-            }
+        if(key != null && key != p.getItemInHand().getType()) {
+            p.sendMessage(ChatColor.LIGHT_PURPLE + "You are holding the incorrect key!");
+            return false; // Did not teleport.
         }
 
         // Teleport.
-        for(Location dest = location.clone(); location.getY() < 256; dest.setY(dest.getX() + 1)) {
-            if(dest.getBlock().getTypeId() == 0 &&
-                    dest.getBlock().getRelative(BlockFace.UP).getTypeId() == 0) {
-                p.teleport(dest);
-                return;
-            }
-        }
-
-        // Oops, couldn't teleport.
-        p.sendMessage(ChatColor.LIGHT_PURPLE + "Waypoint not safe for teleport. What the heck?!");
-
+        Location dest = location.clone();
+        while(dest.getBlock().getTypeId() != 0) dest.setY(dest.getY()+1); // Find block with air.
+        dest.add(0.5, 0, 0.5); // Center in block.
+        dest.setPitch(p.getLocation().getPitch());
+        dest.setYaw(p.getLocation().getYaw());
+        p.teleport(dest);
+        p.sendMessage(ChatColor.LIGHT_PURPLE + "Whoosh!");
+        return true; // Did, in fact, teleport.
     }
 
 

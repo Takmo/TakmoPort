@@ -13,14 +13,40 @@ public class TakmoTeleporter {
 
 
     public TakmoTeleporter(Location l, TakmoWaypoint w) {
-
         if(w == null) // Null waypoint denotes temporary teleporter.
             temporary = true;
         else
             temporary = false;
         waypoint = w;
         location = l;
+    }
 
+
+    public boolean checkTeleportLocation(Player p) {
+        // Get block location and adjust for negative values.
+        Location pl = p.getLocation().clone();
+        if(pl.getX() < 0) pl.setX(pl.getX()-1);
+        pl.setX((int)pl.getX());
+        pl.setY((int)pl.getY());
+        if(pl.getZ() < 0) pl.setZ(pl.getZ()-1);
+        pl.setZ((int)pl.getZ());
+
+        // Check player location vs teleporter location.
+        if(pl.getX() == location.getX() &&
+                (pl.getY() > location.getY() &&
+                 pl.getY() < location.getY() + 4) &&
+                pl.getZ() == location.getZ())
+            return true;
+        return false;
+    }
+
+
+    public void focus(Player p, TakmoWaypoint w) {
+        waypoint = w;
+        if(waypoint == null && p != null)
+            p.sendMessage(ChatColor.LIGHT_PURPLE + "Teleporter focus removed.");
+        else if(p != null)
+            p.sendMessage(ChatColor.LIGHT_PURPLE + "Teleporter given new focus: " + waypoint.getName());
     }
 
 
@@ -35,7 +61,6 @@ public class TakmoTeleporter {
 
 
     public void sendInfo(Player p) {
-
         if(temporary && waypoint == null)
             p.sendMessage(ChatColor.LIGHT_PURPLE + "This temporary teleporter lacks a focus.");
         else if(temporary)
@@ -44,52 +69,18 @@ public class TakmoTeleporter {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "This teleporter lacks a focus.");
         else
             p.sendMessage(ChatColor.LIGHT_PURPLE + "This teleporter is focused upon " + waypoint.getName());
-    
-    }
-
-
-    public boolean checkTeleportLocation(Player p) {
-
-        // Get block location.
-        Location pl = p.getLocation();
-        pl.setX((int)pl.getX());
-        pl.setY((int)pl.getY());
-        pl.setZ((int)pl.getZ());
-
-        // Check player location vs teleporter location.
-        if(pl.getX() == location.getX() &&
-                (pl.getY() > location.getY() && pl.getY() < location.getY() + 4) &&
-                pl.getZ() == location.getZ())
-            return true;
-        return false;
-
-    }
-
-
-    public void focus(Player p, TakmoWaypoint w) {
-        
-        waypoint = w;
-
-        if(p == null) // Don't log if isn't player.
-            return;
-        if(waypoint == null)
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Teleporter focus removed.");
-        else
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Teleporter given new focus: " + waypoint.getName());
-
     }
 
 
     public void teleport(Player p) {
-
         if(waypoint == null) {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "This teleporter lacks a focus.");
             return;
         }
-        waypoint.teleport(p);
+        if(!waypoint.teleport(p))
+            return; // Don't remove focus if you couldn't teleport.
         if(temporary)
             waypoint = null;
-
     }
 
 

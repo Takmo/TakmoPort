@@ -1,2 +1,3 @@
 baseBlockId: 22 # Lapiz block
 showKeyInfo: true # Should show key in /tpinfo?
+syncDelay: 60 # 20 * number of seconds between checks (20*3)

@@ -3,7 +3,7 @@ package com.bitwisehero.takmoport;
 public class TakmoCommand {
 
 
-    public enum ClickType {
+    public enum Type {
         TELEPORTER,
         WAYPOINT,
         FOCUS,
@@ -12,7 +12,7 @@ public class TakmoCommand {
 
 
     private String[] args;
-    private ClickType type;
+    private Type type;
 
 
     public String[] getArguments() {
@@ -20,12 +20,12 @@ public class TakmoCommand {
     }
 
 
-    public ClickType getType() {
+    public Type getType() {
         return type;
     }
 
 
-    public TakmoCommand(ClickType t, String[] a) {
+    public TakmoCommand(Type t, String[] a) {
         type = t;
         args = a;
     }
