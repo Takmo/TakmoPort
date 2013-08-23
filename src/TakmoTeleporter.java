@@ -29,6 +29,11 @@ public class TakmoTeleporter {
     }
 
 
+    public TakmoWaypoint getWaypoint() {
+        return waypoint;
+    }
+
+
     public void sendInfo(Player p) {
 
         if(temporary && waypoint == null)

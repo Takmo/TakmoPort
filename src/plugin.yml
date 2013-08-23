@@ -17,9 +17,9 @@ commands:
         description: Focus a temporary teleporter.
         usage: /focus [name REQUIRED]
         permission: takmoport.focus
-    info:
+    tpinfo:
         description: Check information on teleporter or waypoint.
-        usage: /info
+        usage: /tpinfo
         permission: takmoport.info
 permissions:
     takmoport.teleport:

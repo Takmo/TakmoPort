@@ -67,7 +67,7 @@ To delete a waypoint or teleporter, simply destroy the base block and the entity
 unregistered. By default, anyone is able to use and destroy teleporters, so it may be
 useful to use an ownership plugin such as LWC alongside TakmoPort.
 
-To determine the destination or name of a teleporter/waypoint, use the /info command
+To determine the destination or name of a teleporter/waypoint, use the /tpinfo command
 and click the base block. This will list the current desination waypoint for teleporters
 and the name and required key for waypoints.
 
