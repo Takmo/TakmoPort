@@ -25,6 +25,11 @@ public class TakmoWaypoint {
     }
 
 
+    public Material getKey() {
+        return key;
+    }
+
+
     public Location getLocation() {
         return location.clone();
     }
@@ -32,6 +37,11 @@ public class TakmoWaypoint {
 
     public String getName() {
         return name;
+    }
+
+    
+    public String getPermission() {
+        return permission;
     }
 
 
@@ -69,6 +79,13 @@ public class TakmoWaypoint {
         p.teleport(dest);
         p.sendMessage(ChatColor.LIGHT_PURPLE + "Whoosh!");
         return true; // Did, in fact, teleport.
+    }
+
+
+    public boolean verify(int blockId) {
+        if(location.getBlock().getTypeId() != blockId)
+            return false;
+        return true;
     }
 
 

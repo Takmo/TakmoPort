@@ -1,5 +1,10 @@
 package com.bitwisehero.takmoport;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +36,6 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
 
 
     public void onEnable() {
-
         saveDefaultConfig(); // Write default config.yml if none exists.
         baseBlockTypeId = getConfig().getInt("baseBlockId");
         showKeyInfo = getConfig().getBoolean("showKeyInfo");
@@ -44,16 +48,108 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
         clickingPlayers = new HashMap<Player, TakmoCommand>();
         teleporters = new ArrayList<TakmoTeleporter>();
         waypoints = new HashMap<String, TakmoWaypoint>();
+        load();
 
         getServer().getPluginManager().registerEvents(this, this);
         int delay = getConfig().getInt("syncDelay");
         getServer().getScheduler().scheduleSyncRepeatingTask(this, this, delay, delay);
 
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+            public void run() {
+                save();
+            }
+        }, 12000, 12000);
     }
 
 
     public void onDisable() {
+        getServer().getScheduler().cancelTasks(this);
+        save();
+    }
 
+
+    private void load() {
+        try {
+            // First waypoints...
+            File loadFile = new File(getDataFolder().getAbsolutePath() + File.separator + "waypoints.txt");
+            if(!loadFile.exists()) // Create file if it doens't exist.
+                loadFile.createNewFile();
+            BufferedReader read = new BufferedReader(new FileReader(loadFile));
+            for(String s = read.readLine(); s != null; s = read.readLine()) {
+                // waypointname:key:permission:w:x:y:z
+                String[] parts = s.split(":");
+                Material key = null;
+                if(!parts[1].equals("="))
+                    key = Material.getMaterial(parts[1]);
+                Location loc = new Location(getServer().getWorld(parts[3]),
+                        Double.parseDouble(parts[4]), Double.parseDouble(parts[5]), Double.parseDouble(parts[6]));
+                TakmoWaypoint waypoint = new TakmoWaypoint(loc, parts[0], key, parts[2]);
+                if(waypoint.verify(baseBlockTypeId)) // Verify waypoint before continuing.
+                    waypoints.put(parts[0], waypoint);
+            }
+            read.close();
+
+            // Now teleporters...
+            loadFile = new File(getDataFolder().getAbsolutePath() + File.separator + "teleporters.txt");
+            if(!loadFile.exists()) // Create file if it doesn't exist.
+                loadFile.createNewFile();
+            read = new BufferedReader(new FileReader(loadFile));
+            for(String s = read.readLine(); s != null; s = read.readLine()) {
+                // waypointname:temporary:w:x:y:z
+                String[] parts = s.split(":");
+                boolean temp = parts[1].equals("true");
+                Location loc = new Location(getServer().getWorld(parts[2]),
+                        Double.parseDouble(parts[3]), Double.parseDouble(parts[4]), Double.parseDouble(parts[5]));
+                TakmoWaypoint waypoint = null; // Default
+                if(!temp) // If not a temporary teleporter, get actual waypoint.
+                    waypoint = waypoints.get(parts[0]);
+                TakmoTeleporter teleporter = new TakmoTeleporter(loc, waypoint);
+                if(teleporter.verify(baseBlockTypeId)) // Verify teleporter before continuing...
+                    teleporters.add(teleporter);
+            }
+            read.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void save() {
+        try {
+            //First waypoints...
+            File saveFile = new File(getDataFolder().getAbsolutePath() + File.separator + "waypoints.txt");
+            if(saveFile.exists())
+                saveFile.delete();
+            saveFile.createNewFile();
+            FileWriter write = new FileWriter(saveFile);
+            for(TakmoWaypoint w : waypoints.values()) {
+                String key = "=";
+                if(w.getKey() != null)
+                    key = w.getKey().toString();
+                Location l = w.getLocation();
+                write.write(w.getName() + ":" + key + ":" + w.getPermission() + ":" +
+                        l.getWorld().getName() + ":" +l.getX() + ":" + l.getY() + ":" + l.getZ() + "\n");
+            }
+            write.close();
+
+            // Now teleporters...
+            saveFile = new File(getDataFolder().getAbsolutePath() + File.separator + "teleporters.txt");
+            if(saveFile.exists())
+                saveFile.delete();
+            saveFile.createNewFile();
+            write = new FileWriter(saveFile);
+            for(TakmoTeleporter t : teleporters) {
+                String name = "=";
+                if(t.getWaypoint() != null)
+                    name = t.getWaypoint().getName();
+                Location l = t.getLocation();
+                write.write(name + ":" + t.isTemporary() + ":" +
+                        l.getWorld().getName() + ":" + l.getX() + ":" + l.getY() + ":" + l.getZ() + "\n");
+            }
+            write.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -176,7 +272,6 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
             return;
         }
 
-
         // Waypoint Command
         if(c.getType() == TakmoCommand.Type.WAYPOINT) {
             if(args.length == 0) { // If no arguments... Needs arguments.
@@ -222,18 +317,24 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
             else
                 p.sendMessage(ChatColor.LIGHT_PURPLE + "Created teleporter to " + args[0].replaceAll("[^a-zA-Z0-9_.-]", ""));
         }
-
-
     }
 
 
-    // Run every 3 seconds. Check teleports.
     public void run() {
-        // TODO OPTIMIZE AND VERIFY WAYPOINT EXISTS BEFORE TELEPORT
+        // TODO EXTREME OPTIMIZATION
         for(Player p : getServer().getOnlinePlayers()) {
             for(TakmoTeleporter t : teleporters) {
-                if(t.checkTeleportLocation(p))
-                    t.teleport(p);
+                if(t.checkTeleportLocation(p)){
+                    if(!t.getWaypoint().verify(baseBlockTypeId)) { // Verify waypoint before teleport.
+                        for(TakmoTeleporter tp : teleporters) {
+                            if(tp.getWaypoint() == t.getWaypoint())
+                                tp.focus(null, null); // Remove focus if waypoint is broken.
+                        }
+                        waypoints.remove(t.getWaypoint().getName());
+                        return;
+                    }
+                    t.teleport(p); // If everything is good, teleport bro.
+                }
             }
         }
     }

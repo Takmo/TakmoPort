@@ -60,6 +60,11 @@ public class TakmoTeleporter {
     }
 
 
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+
     public void sendInfo(Player p) {
         if(temporary && waypoint == null)
             p.sendMessage(ChatColor.LIGHT_PURPLE + "This temporary teleporter lacks a focus.");
@@ -81,6 +86,13 @@ public class TakmoTeleporter {
             return; // Don't remove focus if you couldn't teleport.
         if(temporary)
             waypoint = null;
+    }
+
+
+    public boolean verify(int blockId) {
+        if(location.getBlock().getTypeId() != blockId)
+            return false;
+        return true;
     }
 
 
