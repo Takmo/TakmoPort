@@ -1,3 +1,4 @@
+// See license section in README.
 package com.bitwisehero.takmoport;
 
 import java.io.BufferedReader;
@@ -28,8 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, Runnable {
 
 
-    ArrayList<TakmoTeleporter> teleporters;      // List of teleporters.
-    HashMap<String, TakmoWaypoint> waypoints;    // List of waypoints.
+    private TakmoPortManager manager;
     private HashMap<Player, TakmoCommand> clickingPlayers;
     private int baseBlockTypeId; // The typeId for the base block from config.
     private boolean showKeyInfo; // Show key with info?
@@ -40,14 +40,14 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
         baseBlockTypeId = getConfig().getInt("baseBlockId");
         showKeyInfo = getConfig().getBoolean("showKeyInfo");
 
+        // Register commands.
         getCommand("waypoint").setExecutor(this);
         getCommand("teleporter").setExecutor(this);
         getCommand("focus").setExecutor(this);
         getCommand("tpinfo").setExecutor(this);
 
-        clickingPlayers = new HashMap<Player, TakmoCommand>();
-        teleporters = new ArrayList<TakmoTeleporter>();
-        waypoints = new HashMap<String, TakmoWaypoint>();
+        manager = new TakmoPortManager(baseBlockTypeId, showKeyInfo);
+        clickingPlayers = new HashMap<Player,TakmoCommand>();
         load();
 
         getServer().getPluginManager().registerEvents(this, this);
@@ -75,6 +75,7 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
             if(!loadFile.exists()) // Create file if it doens't exist.
                 loadFile.createNewFile();
             BufferedReader read = new BufferedReader(new FileReader(loadFile));
+
             for(String s = read.readLine(); s != null; s = read.readLine()) {
                 // waypointname:key:permission:w:x:y:z
                 String[] parts = s.split(":");
@@ -83,9 +84,7 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
                     key = Material.getMaterial(parts[1]);
                 Location loc = new Location(getServer().getWorld(parts[3]),
                         Double.parseDouble(parts[4]), Double.parseDouble(parts[5]), Double.parseDouble(parts[6]));
-                TakmoWaypoint waypoint = new TakmoWaypoint(loc, parts[0], key, parts[2]);
-                if(waypoint.verify(baseBlockTypeId)) // Verify waypoint before continuing.
-                    waypoints.put(parts[0], waypoint);
+                manager.addWaypoint(parts[0], loc, key, parts[2]);
             }
             read.close();
 
@@ -94,18 +93,17 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
             if(!loadFile.exists()) // Create file if it doesn't exist.
                 loadFile.createNewFile();
             read = new BufferedReader(new FileReader(loadFile));
+
             for(String s = read.readLine(); s != null; s = read.readLine()) {
                 // waypointname:temporary:w:x:y:z
                 String[] parts = s.split(":");
                 boolean temp = parts[1].equals("true");
                 Location loc = new Location(getServer().getWorld(parts[2]),
                         Double.parseDouble(parts[3]), Double.parseDouble(parts[4]), Double.parseDouble(parts[5]));
-                TakmoWaypoint waypoint = null; // Default
-                if(!temp) // If not a temporary teleporter, get actual waypoint.
-                    waypoint = waypoints.get(parts[0]);
-                TakmoTeleporter teleporter = new TakmoTeleporter(loc, waypoint);
-                if(teleporter.verify(baseBlockTypeId)) // Verify teleporter before continuing...
-                    teleporters.add(teleporter);
+                String name = null;
+                if(!temp && !parts[0].equals("=")) // Give name to non-temp teleporters.
+                    name = parts[0];
+                manager.addTeleporter(loc, name);
             }
             read.close();
         } catch(IOException e) {
@@ -122,7 +120,8 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
                 saveFile.delete();
             saveFile.createNewFile();
             FileWriter write = new FileWriter(saveFile);
-            for(TakmoWaypoint w : waypoints.values()) {
+
+            for(TakmoWaypoint w : manager.getAllWaypoints()) {
                 String key = "=";
                 if(w.getKey() != null)
                     key = w.getKey().toString();
@@ -138,7 +137,8 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
                 saveFile.delete();
             saveFile.createNewFile();
             write = new FileWriter(saveFile);
-            for(TakmoTeleporter t : teleporters) {
+
+            for(TakmoTeleporter t : manager.getAllTeleporters()) {
                 String name = "=";
                 if(t.getWaypoint() != null)
                     name = t.getWaypoint().getName();
@@ -154,27 +154,25 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
 
 
     public boolean onCommand(CommandSender s, Command c, String l, String[] a) {
-        // Must be a player.
         if(s instanceof ConsoleCommandSender)
             s.sendMessage("Sorry, this command is only available in-game!");
         if(!(s instanceof Player))
             return true;
-        // Commands
         if(l.equals("teleporter")) {
             clickingPlayers.put((Player) s, new TakmoCommand(TakmoCommand.Type.TELEPORTER, a));
-            s.sendMessage(ChatColor.LIGHT_PURPLE + "Right click the base block to create teleporter.");
+            message(s, "Right click the base block to create teleporter.");
         }
         if(l.equals("waypoint")) {
             clickingPlayers.put((Player) s, new TakmoCommand(TakmoCommand.Type.WAYPOINT, a));
-            s.sendMessage(ChatColor.LIGHT_PURPLE + "Right click the base block to create waypoint.");
+            message(s, "Right click the base block to create waypoint.");
         }
         if(l.equals("focus")) {
             clickingPlayers.put((Player) s, new TakmoCommand(TakmoCommand.Type.FOCUS, a));
-            s.sendMessage(ChatColor.LIGHT_PURPLE + "Right click the teleporter to focus.");
+            message(s, "Right click the teleporter to focus.");
         }
         if(l.equals("tpinfo")) {
             clickingPlayers.put((Player) s, new TakmoCommand(TakmoCommand.Type.INFO, a));
-            s.sendMessage(ChatColor.LIGHT_PURPLE + "Right click the teleporter or waypoint for info.");
+            message(s, "Right click the teleporter or waypoint for info.");
         }
         return true;
     }
@@ -182,24 +180,16 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        Location l = e.getBlock().getLocation();
-        // Check if the location matches a teleporter or waypoint.
-        for(TakmoTeleporter tp : teleporters) {
-            if(l.equals(tp.getLocation())) { // Remove teleporter is block is broken.
-                e.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Teleporter destroyed.");
-                teleporters.remove(tp);
-                return;
-            }
-        }
-        for(Map.Entry<String, TakmoWaypoint> wp : waypoints.entrySet()) {
-            if(l.equals(wp.getValue().getLocation())) {
-                e.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Waypoint destroyed.");
-                for(TakmoTeleporter tp : teleporters) {
-                    if(tp.getWaypoint() == wp.getValue())
-                        tp.focus(null, null); // Remove focuses from teleporters.
-                }
-                waypoints.remove(wp.getKey()); // Remove waypoint.
-            }
+        if(e.getBlock().getTypeId() != baseBlockTypeId)
+            return;
+        switch(manager.baseBroken(e.getBlock().getLocation())) {
+            case 1:
+                message(e.getPlayer(), "Waypoint destroyed.");
+                break;
+            case 2:
+                message(e.getPlayer(), "Teleporter destroyed.");
+                break;
+            default: break;
         }
     }
 
@@ -207,136 +197,119 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent e) {
         
-        // Set variables and test conditions.
         if(!clickingPlayers.containsKey(e.getPlayer()))
             return; // If we aren't waiting on the player, exit.
+
         Player p = e.getPlayer();
-        Block b = e.getClickedBlock();
         TakmoCommand c = clickingPlayers.get(p);
         clickingPlayers.remove(p); // Remove player from waitinglist.
-        if(b.getTypeId() != baseBlockTypeId)
-            return;
+
+        if(e.getClickedBlock().getTypeId() != baseBlockTypeId)
+            return; // Make sure it's the right block type.
+
+        // Sanitize all arguments.
         String[] args = c.getArguments();
+        String[] a = new String[args.length];
+        for(int i = 0; i < args.length; i++)
+            a[i] = args[i].replaceAll("[^a-zA-Z0-9_.-]", "");
 
-        // Check if the location matches a teleporter.
-        TakmoTeleporter exiTeleporter = null;
-        for(TakmoTeleporter tp : teleporters) {
-            if(b.getLocation().equals(tp.getLocation())) {
-                exiTeleporter = tp;
-            }
-        }
-
-        // Focus Command
+        // Focus command
         if(c.getType() == TakmoCommand.Type.FOCUS) {
-            if(exiTeleporter == null) { // If the block isn't a teleporter.
-                p.sendMessage(ChatColor.LIGHT_PURPLE + "This block isn't a teleporter.");
-                return;
+            String name = null;
+            if(a.length > 0)
+                name = a[0];
+            switch(manager.focusTeleporter(e.getClickedBlock().getLocation(), name)) {
+                case 0:
+                    message(p, "Teleporter given new focus: " + name);
+                    break;
+                case 1:
+                    message(p, "Teleporter focus removed.");
+                    break;
+                case 2:
+                    message(p, "This block isn't a teleporter.");
+                    break;
+                case 3:
+                    message(p, "No waypoint exists with the name " + name);
+                    break;
+                default:
+                    break;
             }
-            TakmoWaypoint w = null;
-            if(args.length > 0) {
-                w = waypoints.get(args[0].replaceAll("[^a-zA-Z0-9_.-]", ""));
-                if(w == null) {
-                    p.sendMessage(ChatColor.LIGHT_PURPLE + "No waypoint exists with that name!");
-                    return; // Exit if invalid waypoint name.
-                }
-            }
-            exiTeleporter.focus(p, w); // Focus teleporter to either null or waypoint.
             return;
-        }
-
-        // Check if the location matches a waypoint.
-        TakmoWaypoint exiWaypoint = null;
-        for(TakmoWaypoint wp : waypoints.values()) {
-            if(b.getLocation().equals(wp.getLocation())) {
-                exiWaypoint = wp;
-            }
         }
 
         // Info Command
         if(c.getType() == TakmoCommand.Type.INFO) {
-            if(exiTeleporter != null) { // If block is teleporter
-                exiTeleporter.sendInfo(p);
-                return;
-            }
-            if(exiWaypoint != null) { // If block is waypoint
-                exiWaypoint.sendInfo(p, showKeyInfo);
-                return;
-            }
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Not a teleporter or waypoint.");
-            return;
-        }
-
-        // Exit if waypoint or teleporter here. Following commands cannot have that.
-        if(exiTeleporter != null || exiWaypoint != null) {
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "A teleporter or waypoint already exists here!");
+            if(!manager.sendInfo(p, e.getClickedBlock().getLocation()))
+                message(p, "This block isn't a teleporter or waypoint.");
             return;
         }
 
         // Waypoint Command
         if(c.getType() == TakmoCommand.Type.WAYPOINT) {
             if(args.length == 0) { // If no arguments... Needs arguments.
-                p.sendMessage(ChatColor.LIGHT_PURPLE + "Try \"/help waypoint\" for usage.");
+                message(p, "Try \"/help waypoint\" for usage.");
                 return;
             }
-
-            String name = args[0].replaceAll("[^a-zA-Z0-9_.-]", ""); // First arg, escaped.
+            String name = a[0];
             Material key = null;        // Default value.
             String permission = null;   // Default value.
 
-            if(waypoints.containsKey(name)) { // Make sure name isn't taken.
-                p.sendMessage(ChatColor.LIGHT_PURPLE + "A waypoint with that name already exists.");
-                return;
-            }
-
             if(args.length > 1) { // If key argument exists...
-                if(args[1].equalsIgnoreCase("true")) // And is true...
+                if(a[1].equalsIgnoreCase("true")) // And is true...
                     key = p.getItemInHand().getType();
                 if(args.length > 2) // If permissions argument exists...
-                    permission = args[2].replaceAll("[^a-zA-Z0-9_.-]", "");
+                    permission = a[2];
             }
 
-            waypoints.put(name, new TakmoWaypoint(b.getLocation(), name, key, permission));
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Waypoint created: " + name);
+            switch(manager.addWaypoint(name, e.getClickedBlock().getLocation(), key, permission)){
+                case 0:
+                    message(p, "Waypoint created: " + name);
+                    break;
+                case 1:
+                    message(p, "A waypoint with this name already exists.");
+                    break;
+                case 2:
+                    message(p, "A waypoint or teleporter already exists here.");
+                    break;
+                default:
+                    break;
+            }
+            return;
         }
 
         // Teleporter
         if(c.getType() == TakmoCommand.Type.TELEPORTER) {
-            TakmoWaypoint w = null;
-            if(args.length > 0) { // If there is a waypoint name...
-                w = waypoints.get(args[0].replaceAll("[^a-zA-Z0-9_.-]", "")); // First arg, escaped.
-                if(w == null) { // Exit if invalid name.
-                    p.sendMessage(ChatColor.LIGHT_PURPLE + "No waypoint exists with that name!");
-                    return;
-                }
+            String name = null;
+            if(a.length > 0)
+                name = a[0];
+            switch(manager.addTeleporter(e.getClickedBlock().getLocation(), name)) {
+                case 0:
+                    message(p, "Created teleporter to " + name);
+                    break;
+                case 1:
+                    message(p, "Created temporary teleporter.");
+                    break;
+                case 2:
+                    message(p, "A waypoint or teleporter already exists here.");
+                    break;
+                case 3:
+                    message(p, "Desination waypoint does not exist: " + name);
+                    break;
+                default:
+                    break;
             }
-
-            // Create teleporter.
-            teleporters.add(new TakmoTeleporter(b.getLocation(), w));
-            if(w == null)
-                p.sendMessage(ChatColor.LIGHT_PURPLE + "Created temporary teleporter! Needs focus.");
-            else
-                p.sendMessage(ChatColor.LIGHT_PURPLE + "Created teleporter to " + args[0].replaceAll("[^a-zA-Z0-9_.-]", ""));
+            return; 
         }
     }
 
 
+    private void message(CommandSender p, String s) {
+        p.sendMessage(ChatColor.LIGHT_PURPLE + s);
+    }
+
+
     public void run() {
-        // TODO EXTREME OPTIMIZATION
-        for(Player p : getServer().getOnlinePlayers()) {
-            for(TakmoTeleporter t : teleporters) {
-                if(t.checkTeleportLocation(p)){
-                    if(!t.getWaypoint().verify(baseBlockTypeId)) { // Verify waypoint before teleport.
-                        for(TakmoTeleporter tp : teleporters) {
-                            if(tp.getWaypoint() == t.getWaypoint())
-                                tp.focus(null, null); // Remove focus if waypoint is broken.
-                        }
-                        waypoints.remove(t.getWaypoint().getName());
-                        return;
-                    }
-                    t.teleport(p); // If everything is good, teleport bro.
-                }
-            }
-        }
+        manager.teleportPlayers(getServer().getOnlinePlayers());
     }
 
 }

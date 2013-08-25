@@ -1,3 +1,4 @@
+// See license section in README.
 package com.bitwisehero.takmoport;
 
 public class TakmoCommand {

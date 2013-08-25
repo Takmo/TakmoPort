@@ -1,80 +1,86 @@
 TakmoPort - A Teleporting Plugin
 
-- Introduction -
+- License -
 
-Quite a long time ago, I sat down one weekend and hacked together a teleportation
-plugin named ModePoints. I started off wanting to simplify teleportation, and,
-in retrospect, I actually made it MORE difficult. Not entirely happy with that
-attempt and still a bit unhappy about current teleportation methods, I'm starting
-on a new project, named TakmoPort, which will hopefully be an improvement from
-the original plugin.
+Copyright (c) 2013 TechnoBulldog
 
-This project is currently in development, so do not expect it to be ready soon.
-It will be ready when it's ready. That's about all I can say.
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
 
-I will be uploading my progress here as I work on the project. Unless otherwise
-stated, all code here is released subject to the zlib/libpng license.
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
 
-The rest of this text consists of my attempt to explain what the plugin should
-do and how it will work.
+   1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
 
-- Ideas -
+   2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
 
-TakmoPort would consist of two types of entities: Waypoints and Teleporters.
-A teleporter serves as the sending location of a teleport.
-A waypoint serves as the receiving location of a teleport.
-Teleporters are linked to specific waypoints.
-Standing in a teleporter for 3 seconds will teleport you to the asigned waypoint.
-If a teleporter needs a key, you must be HOLDING the correct key in your hand.
+   3. This notice may not be removed or altered from any source
+   distribution.
 
-Each teleporter and waypoint is marked by a single block (type specified in config)
-that serves as the base. A player using a teleport must be standing on/above the
-teleporter base within 3 blocks on the Y-axis. When a player is teleported to a
-waypoint, they will automatically be elevated to the next free space above the base.
+- Overview -
 
-To create a waypoint, use the /waypoint command and click the desired base block.
-The syntax is as follows:
+TakmoPort is a practical waypoint teleportation plugin. It consists of two parts: 
+Waypoints and Teleporters. A waypoint serves as a destination, the receiving end
+of the teleport. A teleporter is the sending end. You use a teleporter to warp to
+a waypoint (but not vice-versa.) Both teleporters and waypoints are marked by a
+specific type of block (default is lapis-lazuli, but you can edit it in the
+config.yml file.)
 
-/waypoint [name - required] [key - default false] [permission.node]
+To make use of a teleporter, simply stand above the base block (a lapis-lazuli
+by default) and wait to be teleported to the waypoint. Some waypoints require
+you to be holding a specific key in order to teleport. Others may require you
+to be granted specific permissions by a server administrator.
 
-The name is required to create a waypoint, and must be unique from existing waypoints.
-The key option defaults to false, but if passed true, the key required is the item
-you are currently holding (nothing is a valid key.) The final option, the permission
-node, allows you to specify the required permission a player must possess to be
-teleported to this waypoint. Not required by default, but may be useful for admins.
+To create a WAYPOINT (DESTINATION), use the /waypoint command and right click
+the block. The only required argument is the name. After that, you may specify
+if you want to require a key or if you want to set a specific permission node
+requirement. By setting the second argument to true, the item you right-click
+your waypoint with will become the waypoint's key, and you must be holding it
+in order to teleport to the waypoint. The permission node option may be useful
+for server admins who would like to restrict certain teleporters to certain
+users or groups only.
 
-To create a teleporter, use the /teleporter command and click the desired base block.
-The syntax is as follows:
+/waypoint [name] [true/false] [permission.node]
 
-/teleporter [waypoint - optional]
+To create a TELEPORTER (SENDER), use the /teleporter command and right click
+the block. There are two types of teleporters: normal and temporary. A normal
+teleporter is set to one specific waypoint and standing in it will automatically
+teleport you to your destination waypoint. A temporary teleporter has no set
+waypoint. Instead, you must give it a waypoint using the /focus command every
+time you wish to teleport. Temporary teleporters allow you to have a
+multi-purpose teleporter while preventing others from being able to follow you
+through the teleporter. By using the /teleporter command with a waypoint name,
+you create a normal teleporter. By using /teleporter with no additional
+arguments, you create a temporary teleporter.
 
-When creating a teleporter with a destination waypoint, the teleporter will automatically
-be set to teleport to a specific waypoint. By omitting the waypoint option, you create
-a temporary teleporter.
+/teleporter [name] = Normal teleporter. Name is waypoint name.
+/teleporter = Temporary teleporter. Requires a /focus
 
-Temporary teleporters have no waypoint by default and will not teleport unless focused.
-These teleporters can be useful as a public teleporter allowing you to teleport to any
-number of waypoints rather than being limited to a single one. In order to teleport
-using a temporary teleporter, you must focus the teleporter on the desired waypoint
-before stepping into it. After focusing, the teleporter acts as any normal teleporter.
-When a player has been teleported, the teleporter reverts back to its original unfocused
-state.
-To focus, use the following command and click the base block.
+To change the destination of a teleporter, use the /focus command. Using /focus
+on a normal teleporter will permanantly change its destination waypoint. By
+using /focus on a temporary teleporter, the destination waypoint will be reset
+as soon as a player is teleported. Using /focus with no arguments will remove
+the destination from any teleporter.
 
-/focus [waypoint - required]
+/focus [name] = Set new destination. Name is waypoint name.
+/focus = Clear current destination.
 
-To delete a waypoint or teleporter, simply destroy the base block and the entity will be
-unregistered. By default, anyone is able to use and destroy teleporters, so it may be
-useful to use an ownership plugin such as LWC alongside TakmoPort.
+Lastly, to check information related to a teleporter or waypoint, use /tpinfo
+and click on the base block to check its information.
 
-To determine the destination or name of a teleporter/waypoint, use the /tpinfo command
-and click the base block. This will list the current desination waypoint for teleporters
-and the name and required key for waypoints.
+/tpinfo = Get info on teleporter or waypoint.
 
 - Configuration Options / config.yml -
 
 baseBlockId: 22 # Lapiz block
 showKeyInfo: true # Show the required key using /info. False to hide key.
+syncDelay: 60 # Number of ticks between teleport checks. (20 ticks per second x 3 seconds)
 
 - Permission Nodes -
 

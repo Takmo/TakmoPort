@@ -1,3 +1,4 @@
+// See license section in README.
 package com.bitwisehero.takmoport;
 
 import org.bukkit.ChatColor;
@@ -10,20 +11,26 @@ public class TakmoTeleporter {
     private Location location; // Location of the teleporter
     private boolean temporary; // True if temporary, false if not.
     private TakmoWaypoint waypoint; // The linked waypoint, if any.
+    private TakmoTeleporterChunk chunk; // The chunk housing this.
 
 
-    public TakmoTeleporter(Location l, TakmoWaypoint w) {
+    public TakmoTeleporter(TakmoTeleporterChunk c, Location l, TakmoWaypoint w) {
         if(w == null) // Null waypoint denotes temporary teleporter.
             temporary = true;
         else
             temporary = false;
         waypoint = w;
         location = l;
+        chunk = c;
     }
 
 
     public boolean checkTeleportLocation(Player p) {
         // Get block location and adjust for negative values.
+        // Player positions and rounding for negative numbers.
+        // Means a somewhat hacky solution here. Basically, if
+        // the X or Z coordinate is negative, truncate zeroes
+        // and subtract one, essentially rounding down.
         Location pl = p.getLocation().clone();
         if(pl.getX() < 0) pl.setX(pl.getX()-1);
         pl.setX((int)pl.getX());
@@ -41,12 +48,13 @@ public class TakmoTeleporter {
     }
 
 
-    public void focus(Player p, TakmoWaypoint w) {
+    public void focus(TakmoWaypoint w) {
         waypoint = w;
-        if(waypoint == null && p != null)
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Teleporter focus removed.");
-        else if(p != null)
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Teleporter given new focus: " + waypoint.getName());
+    }
+
+
+    public TakmoTeleporterChunk getChunk() {
+        return chunk;
     }
 
 

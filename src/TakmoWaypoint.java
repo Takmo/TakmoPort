@@ -1,3 +1,4 @@
+// See license section in README.
 package com.bitwisehero.takmoport;
 
 import org.bukkit.block.BlockFace;
@@ -59,17 +60,15 @@ public class TakmoWaypoint {
 
     public boolean teleport(Player p) {
         // Check permissions.
-        if(!p.hasPermission(permission) || !p.hasPermission("takmoport.teleport")) {
+        if(!p.hasPermission(permission) && !p.hasPermission("takmoport.admin")) {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "You don't have permission to teleport!");
             return false; // Did not teleport.
         }
-
         // Check key.
-        if(key != null && key != p.getItemInHand().getType()) {
+        if(!p.hasPermission("takmoport.admin") && key != null && key != p.getItemInHand().getType()) {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "You are holding the incorrect key!");
             return false; // Did not teleport.
         }
-
         // Teleport.
         Location dest = location.clone();
         while(dest.getBlock().getTypeId() != 0) dest.setY(dest.getY()+1); // Find block with air.
