@@ -1,5 +1,9 @@
 TakmoPort - A Teleporting Plugin
 
+Note: No jarfile is currently provided. You may build this plugin yourself
+using the ant build system if you would like to use it. When I am relatively
+assured that this plugin is bug-free, I will look into a BukkitDev page.
+
 - License -
 
 Copyright (c) 2013 TechnoBulldog
@@ -46,7 +50,7 @@ in order to teleport to the waypoint. The permission node option may be useful
 for server admins who would like to restrict certain teleporters to certain
 users or groups only.
 
-/waypoint [name] [true/false] [permission.node]
+/waypoint [name] [use key? true/FALSE - not required] [perm.node - not required]
 
 To create a TELEPORTER (SENDER), use the /teleporter command and right click
 the block. There are two types of teleporters: normal and temporary. A normal
