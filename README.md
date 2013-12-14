@@ -28,6 +28,11 @@ assured that this plugin is bug-free, I will look into a BukkitDev page.
 
 ### Basics ###
 
+TakmoPort is a practical waypoint teleportation plugin for Bukkit.
+It is composed to two types of objects: teleporters and waypoints, both
+of which require a specific base block to exist before creation. (The
+default type of base is a lapiz block, but this can be changed in config.yml.)
+
 To teleport, first make a waypoint. This will be your destination. Just
 choose a name for your waypoint, type the following command, and right 
 click the base block you want to use. (It's a lapiz block by default, but
