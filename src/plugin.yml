@@ -11,7 +11,7 @@ commands:
         permission: takmoport.create.waypoint
     teleporter:
         description: Create a teleporter with or without a focus.
-        usage: /waypoint [name OPTIONAL]
+        usage: /teleporter [name OPTIONAL]
         permission: takmoport.create.teleporter
     focus:
         description: Focus a temporary teleporter.

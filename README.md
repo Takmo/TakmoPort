@@ -1,33 +1,32 @@
 TakmoPort - A Teleporting Plugin
+================================
 
 Note: No jarfile is currently provided. You may build this plugin yourself
 using the ant build system if you would like to use it. When I am relatively
 assured that this plugin is bug-free, I will look into a BukkitDev page.
 
-- License -
+    Copyright (c) 2013 TechnoBulldog
 
-Copyright (c) 2013 TechnoBulldog
+    This software is provided 'as-is', without any express or implied
+    warranty. In no event will the authors be held liable for any damages
+    arising from the use of this software.
 
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any damages
-arising from the use of this software.
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it
+    freely, subject to the following restrictions:
 
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
+       1. The origin of this software must not be misrepresented; you must not
+       claim that you wrote the original software. If you use this software
+       in a product, an acknowledgment in the product documentation would be
+       appreciated but is not required.
 
-   1. The origin of this software must not be misrepresented; you must not
-   claim that you wrote the original software. If you use this software
-   in a product, an acknowledgment in the product documentation would be
-   appreciated but is not required.
+       2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.
 
-   2. Altered source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
+       3. This notice may not be removed or altered from any source
+       distribution.
 
-   3. This notice may not be removed or altered from any source
-   distribution.
-
-- Overview -
+## Overview ##
 
 TakmoPort is a practical waypoint teleportation plugin. It consists of two parts: 
 Waypoints and Teleporters. A waypoint serves as a destination, the receiving end
@@ -50,7 +49,7 @@ in order to teleport to the waypoint. The permission node option may be useful
 for server admins who would like to restrict certain teleporters to certain
 users or groups only.
 
-/waypoint [name] [use key? true/FALSE - not required] [perm.node - not required]
+    /waypoint [name] [use key? true/FALSE - not required] [perm.node - not required]
 
 To create a TELEPORTER (SENDER), use the /teleporter command and right click
 the block. There are two types of teleporters: normal and temporary. A normal
@@ -63,8 +62,8 @@ through the teleporter. By using the /teleporter command with a waypoint name,
 you create a normal teleporter. By using /teleporter with no additional
 arguments, you create a temporary teleporter.
 
-/teleporter [name] = Normal teleporter. Name is waypoint name.
-/teleporter = Temporary teleporter. Requires a /focus
+    /teleporter [name] = Normal teleporter. Name is waypoint name.
+    /teleporter = Temporary teleporter. Requires a /focus
 
 To change the destination of a teleporter, use the /focus command. Using /focus
 on a normal teleporter will permanantly change its destination waypoint. By
@@ -72,28 +71,28 @@ using /focus on a temporary teleporter, the destination waypoint will be reset
 as soon as a player is teleported. Using /focus with no arguments will remove
 the destination from any teleporter.
 
-/focus [name] = Set new destination. Name is waypoint name.
-/focus = Clear current destination.
+    /focus [name] = Set new destination. Name is waypoint name.
+    /focus = Clear current destination.
 
 Lastly, to check information related to a teleporter or waypoint, use /tpinfo
 and click on the base block to check its information.
 
-/tpinfo = Get info on teleporter or waypoint.
+    /tpinfo = Get info on teleporter or waypoint.
 
-- Configuration Options / config.yml -
+## Configuration Options / config.yml ##
 
-baseBlockId: 22 # Lapiz block
-showKeyInfo: true # Show the required key using /info. False to hide key.
-syncDelay: 60 # Number of ticks between teleport checks. (20 ticks per second x 3 seconds)
+    baseBlockId: 22 # Lapiz block
+    showKeyInfo: true # Show the required key using /info. False to hide key.
+    syncDelay: 60 # Number of ticks between teleport checks. (20 ticks per second x 3 seconds)
 
-- Permission Nodes -
+## Permission Nodes ##
 
-takmoport.teleport - Able to make use of a teleporter.
-takmoport.admin - Able to TP to all waypoints, even those requiring permissions.
-takmoport.create.teleport - Able to create teleporters.
-takmoport.create.waypoint - Able to create waypoints.
-takmoport.focus - Able to focus temporary teleporters.
-takmoport.info - Examine info on teleporters and waypoints.
-takmoport.default - All of the above permissions excluding admin
-takmoport.* - All of the above including admin.
+    takmoport.teleport - Able to make use of a teleporter.
+    takmoport.admin - Able to TP to all waypoints, even those requiring permissions.
+    takmoport.create.teleport - Able to create teleporters.
+    takmoport.create.waypoint - Able to create waypoints.
+    takmoport.focus - Able to focus temporary teleporters.
+    takmoport.info - Examine info on teleporters and waypoints.
+    takmoport.default - All of the above permissions excluding admin
+    takmoport.* - All of the above including admin.
 
