@@ -1,4 +1,4 @@
-TakmoPort - A Teleporting Plugin
+TakmoPort - A Waypoint Teleportation Plugin
 --------------------------------
 
 Note: No jarfile is currently provided. You may build this plugin yourself
@@ -26,64 +26,103 @@ assured that this plugin is bug-free, I will look into a BukkitDev page.
        3. This notice may not be removed or altered from any source
        distribution.
 
-### Overview ###
+### Basics ###
 
-TakmoPort is a practical waypoint teleportation plugin. It consists of two parts: 
-Waypoints and Teleporters. A waypoint serves as a destination, the receiving end
-of the teleport. A teleporter is the sending end. You use a teleporter to warp to
-a waypoint (but not vice-versa.) Both teleporters and waypoints are marked by a
-specific type of block (default is lapis-lazuli, but you can edit it in the
-config.yml file.)
+To teleport, first make a waypoint. This will be your destination. Just
+choose a name for your waypoint, type the following command, and right 
+click the base block you want to use. (It's a lapiz block by default, but
+you can change it.)
 
-To make use of a teleporter, simply stand above the base block (a lapis-lazuli
-by default) and wait to be teleported to the waypoint. Some waypoints require
-you to be holding a specific key in order to teleport. Others may require you
-to be granted specific permissions by a server administrator.
+    /waypoint NAME
 
-To create a WAYPOINT (DESTINATION), use the /waypoint command and right click
-the block. The only required argument is the name. After that, you may specify
-if you want to require a key or if you want to set a specific permission node
-requirement. By setting the second argument to true, the item you right-click
-your waypoint with will become the waypoint's key, and you must be holding it
-in order to teleport to the waypoint. The permission node option may be useful
-for server admins who would like to restrict certain teleporters to certain
-users or groups only.
+Now, to teleport to your new waypoint, you need to make a teleporter.
+Just type the following command, using the name of your waypoint, and
+right click an unused base block. (It's the same type of block as the
+waypoint.)
 
-    /waypoint [name] [use key? true/FALSE - not required] [perm.node - not required]
+    /teleporter WAYPOINT_NAME
 
-To create a TELEPORTER (SENDER), use the /teleporter command and right click
-the block. There are two types of teleporters: normal and temporary. A normal
-teleporter is set to one specific waypoint and standing in it will automatically
-teleport you to your destination waypoint. A temporary teleporter has no set
-waypoint. Instead, you must give it a waypoint using the /focus command every
-time you wish to teleport. Temporary teleporters allow you to have a
-multi-purpose teleporter while preventing others from being able to follow you
-through the teleporter. By using the /teleporter command with a waypoint name,
-you create a normal teleporter. By using /teleporter with no additional
-arguments, you create a temporary teleporter.
+That's it! To teleport from the teleporter to your waypoint, just stand on
+top of the teleporter for a few seconds and it will automatically teleport
+you to your destination waypoint. Your teleporter will continue to function
+as long as your teleporter and waypoint are intact.
 
-    /teleporter [name] = Normal teleporter. Name is waypoint name.
-    /teleporter = Temporary teleporter. Requires a /focus
+### Waypoint Keys ###
 
-To change the destination of a teleporter, use the /focus command. Using /focus
-on a normal teleporter will permanantly change its destination waypoint. By
-using /focus on a temporary teleporter, the destination waypoint will be reset
-as soon as a player is teleported. Using /focus with no arguments will remove
-the destination from any teleporter.
+As long as your teleporter and waypoint are intact, your teleporter will
+serve as a publicly accessible one-way transporter that anyone can use.
+In some cases, however, you may want to limit your waypoint to just a few
+players only. Cases like this might benefit from a waypoint key.
 
-    /focus [name] = Set new destination. Name is waypoint name.
-    /focus = Clear current destination.
+A waypoint key is an item that must be held in the player's hand in order
+to teleport to a waypoint. By default, a player simply stands on the
+teleporter and is whisked away to a waypoint. If a waypoint requires a key,
+however, the player must be holding the correct item in their hand in order
+to be teleported.
 
-Lastly, to check information related to a teleporter or waypoint, use /tpinfo
-and click on the base block to check its information.
+To make a private waypoint that requires a key, use the same waypoint
+command and add "true" to the end. Before right clicking the base block,
+make certain that your intended key is in your hand. Right click the base
+block with your intended key.
 
-    /tpinfo = Get info on teleporter or waypoint.
+    /waypoint NAME true
+
+Teleporters are created using the same steps as before. Now, however, in
+order to successfully teleport, the player must be holding the same key
+used to create the waypoint.
+
+(Note: the exact same item is not required to teleport, only the
+same type of item. If your key is a diamond sword, holding any diamond
+sword will allow you to teleport.)
+
+### Temporary Teleporters ###
+
+For players using numerous waypoints, having a teleporter linked to every
+single waypoint can be impractical. Instead, the player may opt to create
+a temporary teleporter.
+
+Simply put, a temporary teleporter loses its destination waypoint after
+every use. Once a player uses a teleporter, it can no longer teleport
+a player. To create a temporary teleporter, use the teleporter command
+without a waypoint name.
+
+    /teleporter
+
+Of course, a teleporter to nowhere isn't worth much. If a teleporter lacks
+a destination waypoint, you can focus it upon a waypoint using the focus
+command.
+
+    /focus WAYPOINT_NAME
+
+Once a teleporter is focused, teleporting will remove the focus and it
+will return to its dormant state. This is convenient for when you need
+a generic teleporter to an unspecified location. It is also beneficial
+when you don't want other players discovering the name of your destination
+waypoint.
+
+### Teleporter / Waypoint Information ###
+
+If you would like to check information on a teleporter or waypoint, simply
+use the tpinfo command and right click the base block.
+
+    /tpinfo
+
+### Special Permission Waypoints ###
+
+One last option while creating waypoints is to specify a permission node
+that the teleporting player is required to possess. Server admins may
+take advantage of this to create special waypoints only accessible to
+specific players or groups. Just specify the permission node while
+creating the waypoint.
+
+    /waypoint NAME false my.group.vips - No key required.
+    /waypoint NAME true my.group.moderators - Key required.
 
 ### Configuration Options / config.yml ###
 
-    baseBlockId: 22 # Lapiz block
+    baseBlockId: 22 # The ID for the teleporter/waypoint base block. (Default lapiz block.)
     showKeyInfo: true # Show the required key using /info. False to hide key.
-    syncDelay: 60 # Number of ticks between teleport checks. (20 ticks per second x 3 seconds)
+    syncDelay: 60 # Number of server ticks between teleport checks. (20 ticks per second x 3 seconds)
 
 ### Permission Nodes ###
 
