@@ -1,5 +1,5 @@
 TakmoPort - A Teleporting Plugin
-================================
+--------------------------------
 
 Note: No jarfile is currently provided. You may build this plugin yourself
 using the ant build system if you would like to use it. When I am relatively
@@ -26,7 +26,7 @@ assured that this plugin is bug-free, I will look into a BukkitDev page.
        3. This notice may not be removed or altered from any source
        distribution.
 
-## Overview ##
+### Overview ###
 
 TakmoPort is a practical waypoint teleportation plugin. It consists of two parts: 
 Waypoints and Teleporters. A waypoint serves as a destination, the receiving end
@@ -79,13 +79,13 @@ and click on the base block to check its information.
 
     /tpinfo = Get info on teleporter or waypoint.
 
-## Configuration Options / config.yml ##
+### Configuration Options / config.yml ###
 
     baseBlockId: 22 # Lapiz block
     showKeyInfo: true # Show the required key using /info. False to hide key.
     syncDelay: 60 # Number of ticks between teleport checks. (20 ticks per second x 3 seconds)
 
-## Permission Nodes ##
+### Permission Nodes ###
 
     takmoport.teleport - Able to make use of a teleporter.
     takmoport.admin - Able to TP to all waypoints, even those requiring permissions.
