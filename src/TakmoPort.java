@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,13 +32,17 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
 
     private TakmoPortManager manager;
     private HashMap<Player, TakmoCommand> clickingPlayers;
-    private int baseBlockTypeId; // The typeId for the base block from config.
+    private Material baseBlockType; // The material for the base block from config.
     private boolean showKeyInfo; // Show key with info?
 
 
     public void onEnable() {
         saveDefaultConfig(); // Write default config.yml if none exists.
-        baseBlockTypeId = getConfig().getInt("baseBlockId");
+        baseBlockType = Material.getMaterial(getConfig().getString("baseBlockType"));
+        if(baseBlockType == null) {
+            getLogger().warning("config:baseBlockType was not a valid material - defaulting to LAPIS_BLOCK");
+            baseBlockType = Material.LAPIS_BLOCK;
+        }
         showKeyInfo = getConfig().getBoolean("showKeyInfo");
 
         // Register commands.
@@ -46,7 +51,7 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
         getCommand("focus").setExecutor(this);
         getCommand("tpinfo").setExecutor(this);
 
-        manager = new TakmoPortManager(baseBlockTypeId, showKeyInfo);
+        manager = new TakmoPortManager(baseBlockType, showKeyInfo);
         clickingPlayers = new HashMap<Player,TakmoCommand>();
         load();
 
@@ -180,7 +185,7 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        if(e.getBlock().getTypeId() != baseBlockTypeId)
+        if(e.getBlock().getType() != baseBlockType)
             return;
         switch(manager.baseBroken(e.getBlock().getLocation())) {
             case 1:
@@ -204,7 +209,7 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
         TakmoCommand c = clickingPlayers.get(p);
         clickingPlayers.remove(p); // Remove player from waitinglist.
 
-        if(e.getClickedBlock().getTypeId() != baseBlockTypeId)
+        if(e.getClickedBlock().getType() != baseBlockType)
             return; // Make sure it's the right block type.
 
         // Sanitize all arguments.
@@ -309,7 +314,8 @@ public class TakmoPort extends JavaPlugin implements CommandExecutor, Listener, 
 
 
     public void run() {
-        manager.teleportPlayers(getServer().getOnlinePlayers());
+        Collection<? extends Player> c = getServer().getOnlinePlayers();
+        manager.teleportPlayers(c.toArray(new Player[c.size()]));
     }
 
 }

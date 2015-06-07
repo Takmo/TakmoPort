@@ -1,8 +1,8 @@
 name: TakmoPort
 version: 1.0.0
 description: Practical waypoint teleportation.
-author: TechnoBulldog
-website: https://github.com/technobulldog/takmoport
+author: Takmo
+website: https://github.com/takmo/takmoport
 main: com.bitwisehero.takmoport.TakmoPort
 commands:
     waypoint:

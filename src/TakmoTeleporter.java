@@ -4,6 +4,7 @@ package com.bitwisehero.takmoport;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.Location;
+import org.bukkit.Material;
 
 public class TakmoTeleporter {
 
@@ -97,8 +98,8 @@ public class TakmoTeleporter {
     }
 
 
-    public boolean verify(int blockId) {
-        if(location.getBlock().getTypeId() != blockId)
+    public boolean verify(Material blockType) {
+        if(location.getBlock().getType() != blockType)
             return false;
         return true;
     }

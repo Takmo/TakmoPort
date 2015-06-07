@@ -2,10 +2,11 @@ TakmoPort - A Waypoint Teleportation Plugin
 --------------------------------
 
 Note: No jarfile is currently provided. You may build this plugin yourself
-using the ant build system if you would like to use it. When I am relatively
-assured that this plugin is bug-free, I will look into a BukkitDev page.
+using the ant build system if you would like to use it. Given the nature
+of this plugin's development as well as the nature of Minecraft server modding
+and development, this plugin may require modification for your intended use.
 
-    Copyright (c) 2013 TechnoBulldog
+Seems to be working as of June 7th, 2015.
 
     This software is provided 'as-is', without any express or implied
     warranty. In no event will the authors be held liable for any damages
@@ -125,7 +126,7 @@ creating the waypoint.
 
 ### Configuration Options / config.yml ###
 
-    baseBlockId: 22 # The ID for the teleporter/waypoint base block. (Default lapiz block.)
+    baseBlockType: LAPIS_BLOCK # The ID for the teleporter/waypoint base block. (Default lapiz block.)
     showKeyInfo: true # Show the required key using /info. False to hide key.
     syncDelay: 60 # Number of server ticks between teleport checks. (20 ticks per second x 3 seconds)
 
@@ -140,3 +141,13 @@ creating the waypoint.
     takmoport.default - All of the above permissions excluding admin
     takmoport.* - All of the above including admin.
 
+### Building ###
+
+To create a .jar file usable with Spigot, make sure that the Spigot API is copied
+into the directory as spigot.jar, then run:
+
+    ant jar
+
+Note: because I am unsure of the current state of Bukkit, the current build setup
+is designed for Spigot. Should Bukkit be updated, compilating for Bukkit should
+be as simple as switching all references to "spigot" with "bukkit" in build.xml

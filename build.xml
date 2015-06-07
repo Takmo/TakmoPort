@@ -1,13 +1,15 @@
 <project>
     <path id="classpath">
-        <fileset dir="." includes="bukkit.jar" />
+        <fileset dir="." includes="spigot.jar" />
     </path>
     <target name="clean">
         <delete dir="build" />
     </target>
     <target name="compile">
         <mkdir dir="build/classes" />
-        <javac srcdir="src" destdir="build/classes" classpathref="classpath" debug="true" debuglevel="lines,vars,source"/>
+        <javac srcdir="src" destdir="build/classes" classpathref="classpath" debug="true" debuglevel="lines,vars,source">
+            <compilerarg value="-Xlint:deprecation"/>
+        </javac>
     </target>
     <target name="jar" depends="compile">
         <mkdir dir="build/jar" />
@@ -15,6 +17,6 @@
             <zipfileset dir="./src" includes="plugin.yml" fullpath="plugin.yml" />
             <zipfileset dir="./src" includes="config.yml" fullpath="config.yml" />
         </jar>
-        <copy file="build/jar/TakmoPort.jar" tofile="./plugins/TakmoPort.jar" />
+        <copy file="build/jar/TakmoPort.jar" tofile="./server/plugins/TakmoPort.jar" />
     </target>
 </project>

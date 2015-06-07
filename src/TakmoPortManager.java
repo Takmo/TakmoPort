@@ -13,14 +13,14 @@ import org.bukkit.Material;
 public class TakmoPortManager {
 
 
-    private int mBaseBlockTypeId;
+    private Material mBaseBlockType;
     private boolean mShowKeyInfo;
     private ArrayList<TakmoTeleporterChunk> mChunks;
     private HashMap<String,TakmoWaypoint> mWaypoints;
 
 
-    public TakmoPortManager(int baseBlockTypeId, boolean showKeyInfo) {
-        mBaseBlockTypeId = baseBlockTypeId;
+    public TakmoPortManager(Material baseBlockType, boolean showKeyInfo) {
+        mBaseBlockType = baseBlockType;
         mShowKeyInfo = showKeyInfo;
         mChunks = new ArrayList<TakmoTeleporterChunk>();
         mWaypoints = new HashMap<String,TakmoWaypoint>();
@@ -42,7 +42,7 @@ public class TakmoPortManager {
             mChunks.add(c);
         }
         TakmoTeleporter t = new TakmoTeleporter(c, l, w);
-        if(t.verify(mBaseBlockTypeId)) // When loading, make sure teleporter exists.
+        if(t.verify(mBaseBlockType)) // When loading, make sure teleporter exists.
             c.add(new TakmoTeleporter(c, l, w));
         else
             return 4; // Teleporter did not verify.
@@ -58,7 +58,7 @@ public class TakmoPortManager {
         if(getWaypointAtLocation(l) != null || getTeleporterAtLocation(l) != null)
             return 2; // Waypoint or teleporter already exists here.
         TakmoWaypoint w = new TakmoWaypoint(l, name, key, permission);
-        if(w.verify(mBaseBlockTypeId)) // When loading, make sure waypoint exists.
+        if(w.verify(mBaseBlockType)) // When loading, make sure waypoint exists.
             mWaypoints.put(name, w);
         else
             return 3; // Waypoint did not verify.
@@ -180,11 +180,11 @@ public class TakmoPortManager {
             TakmoTeleporter t = c.checkPlayer(p);
             if(t == null)
                 continue; // Player not on teleporter.
-            if(!t.verify(mBaseBlockTypeId)) { // Teleporter doesn't verify.
+            if(!t.verify(mBaseBlockType)) { // Teleporter doesn't verify.
                 removeTeleporter(t); // Remove it.
                 continue;
             }
-            if(t.getWaypoint() != null && !t.getWaypoint().verify(mBaseBlockTypeId)) { // Waypoint doesn't verify.
+            if(t.getWaypoint() != null && !t.getWaypoint().verify(mBaseBlockType)) { // Waypoint doesn't verify.
                 removeWaypoint(t.getWaypoint()); // Remove it.
                 continue;
             }

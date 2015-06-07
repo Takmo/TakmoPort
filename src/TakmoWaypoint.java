@@ -71,7 +71,7 @@ public class TakmoWaypoint {
         }
         // Teleport.
         Location dest = location.clone();
-        while(dest.getBlock().getTypeId() != 0) dest.setY(dest.getY()+1); // Find block with air.
+        while(dest.getBlock().getType() != Material.AIR) dest.setY(dest.getY()+1); // Find block with air.
         dest.add(0.5, 0, 0.5); // Center in block.
         dest.setPitch(p.getLocation().getPitch());
         dest.setYaw(p.getLocation().getYaw());
@@ -81,8 +81,8 @@ public class TakmoWaypoint {
     }
 
 
-    public boolean verify(int blockId) {
-        if(location.getBlock().getTypeId() != blockId)
+    public boolean verify(Material blockType) {
+        if(location.getBlock().getType() != blockType)
             return false;
         return true;
     }
